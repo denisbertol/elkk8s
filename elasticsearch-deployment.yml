@@ -1,0 +1,49 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: elasticsearch-logging
+  namespace: elk
+  labels:
+    app: elasticsearch
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+      - name: elasticsearch-logs
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+        env:
+        - name: "cluster.initial_master_nodes"
+          value: "elasticsearch"
+        - name: "cluster.name"
+          value: "docker-cluster"
+        - name: "discovery.seed_hosts"
+          value: "elasticsearch"
+        - name: "node.name"
+          value: "elasticsearch"          
+        - name: HTTP_ENABLE
+          value: "true"
+        - name: "ES_JAVA_OPTS"
+          value: "-Xms512m -Xmx512m"
+        resources:
+          limits:
+            memory: 1024Mi
+          requests:
+            memory: 1024Mi
+        ports:
+        - containerPort: 9200
+          name: http
+          protocol: TCP
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: storage
+          mountPath: /data
+      volumes:
+          - emptyDir:
+              medium: ""
+            name: "storage"
